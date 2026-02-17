@@ -432,3 +432,6 @@ impl ContextHydrator {
         parts.join("")
     }
 }
+
+#[cfg(test)]
+mod tests;

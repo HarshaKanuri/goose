@@ -12,6 +12,7 @@ use super::provider::EmbeddingProvider;
 ///
 /// The model files (model.onnx + tokenizer.json) must be present
 /// at the configured model directory.
+#[derive(Debug)]
 pub struct LocalEmbeddingProvider {
     model_dir: PathBuf,
     dimensions: usize,
