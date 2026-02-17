@@ -269,6 +269,8 @@ impl ClaudeCodeProvider {
     fn build_stream_json_command(&self) -> Command {
         let mut cmd = Command::new(&self.command);
         configure_subprocess(&mut cmd);
+        // Allow goose to run inside a Claude Code session.
+        cmd.env_remove("CLAUDECODE");
         cmd.arg("--input-format")
             .arg("stream-json")
             .arg("--output-format")
@@ -1334,7 +1336,9 @@ mod tests {
     fn make_provider() -> ClaudeCodeProvider {
         ClaudeCodeProvider {
             command: PathBuf::from("claude"),
-            model: ModelConfig::new(CLAUDE_CODE_DEFAULT_MODEL).unwrap(),
+            model: ModelConfig::new(CLAUDE_CODE_DEFAULT_MODEL)
+                .unwrap()
+                .with_canonical_limits(CLAUDE_CODE_PROVIDER_NAME),
             name: "claude-code".to_string(),
             mcp_config_file: None,
             cli_process: tokio::sync::OnceCell::new(),

@@ -1,6 +1,7 @@
 use anyhow::Result;
 use dotenvy::dotenv;
-use goose::agents::{ExtensionManager, PromptManager};
+use goose::agents::extension_manager::ExtensionManagerCapabilities;
+use goose::agents::{ExtensionManager, GoosePlatform, PromptManager};
 use goose::config::ExtensionConfig;
 use goose::conversation::message::{Message, MessageContent};
 use goose::providers::anthropic::ANTHROPIC_DEFAULT_MODEL;
@@ -282,7 +283,7 @@ impl ProviderTester {
             .model_switch_name
             .as_deref()
             .expect("model_switch_name required for test_model_switch");
-        let alt_config = goose::model::ModelConfig::new(alt)?;
+        let alt_config = goose::model::ModelConfig::new(alt)?.with_canonical_limits(&self.name);
 
         let message = Message::user().with_text("Just say hello!");
         let (response, _) = self
@@ -474,7 +475,12 @@ async fn test_provider(
     let temp_dir = tempfile::tempdir()?;
     let shared_provider = Arc::new(tokio::sync::Mutex::new(Some(provider.clone())));
     let session_manager = Arc::new(SessionManager::new(temp_dir.path().to_path_buf()));
-    let extension_manager = Arc::new(ExtensionManager::new(shared_provider, session_manager));
+    let extension_manager = Arc::new(ExtensionManager::new(
+        shared_provider,
+        session_manager,
+        GoosePlatform::GooseCli.to_string(),
+        ExtensionManagerCapabilities { mcpui: false },
+    ));
     extension_manager
         .add_extension(mcp_extension, None, None, None)
         .await
